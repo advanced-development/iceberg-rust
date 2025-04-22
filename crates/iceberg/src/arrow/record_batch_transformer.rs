@@ -108,7 +108,9 @@ enum SchemaComparison {
 }
 
 #[derive(Debug)]
-pub(crate) struct RecordBatchTransformer {
+/// A transformer that processes `RecordBatch` objects to conform to a target schema
+/// based on an Iceberg snapshot schema and a list of projected field IDs.
+pub struct RecordBatchTransformer {
     snapshot_schema: Arc<IcebergSchema>,
     projected_iceberg_field_ids: Vec<i32>,
 
@@ -120,10 +122,7 @@ pub(crate) struct RecordBatchTransformer {
 impl RecordBatchTransformer {
     /// Build a RecordBatchTransformer for a given
     /// Iceberg snapshot schema and list of projected field ids.
-    pub(crate) fn build(
-        snapshot_schema: Arc<IcebergSchema>,
-        projected_iceberg_field_ids: &[i32],
-    ) -> Self {
+    pub fn build(snapshot_schema: Arc<IcebergSchema>, projected_iceberg_field_ids: &[i32]) -> Self {
         let projected_iceberg_field_ids = projected_iceberg_field_ids.to_vec();
 
         Self {
@@ -133,10 +132,22 @@ impl RecordBatchTransformer {
         }
     }
 
-    pub(crate) fn process_record_batch(
-        &mut self,
-        record_batch: RecordBatch,
-    ) -> Result<RecordBatch> {
+    /// Processes a given `RecordBatch` by applying the necessary transformations
+    /// based on the batch transform configuration.
+    ///
+    /// If no batch transform is configured, it generates one based on the schema
+    /// of the input `RecordBatch` and the snapshot schema. The method ensures that
+    /// the output `RecordBatch` conforms to the target schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `record_batch` - The input `RecordBatch` to be processed.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the transformed `RecordBatch` or an error if the
+    /// transformation fails.
+    pub fn process_record_batch(&mut self, record_batch: RecordBatch) -> Result<RecordBatch> {
         Ok(match &self.batch_transform {
             Some(BatchTransform::PassThrough) => record_batch,
             Some(BatchTransform::Modify {
