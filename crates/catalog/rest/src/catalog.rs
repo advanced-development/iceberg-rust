@@ -288,7 +288,17 @@ impl RestCatalog {
         }
     }
 
-    async fn load_file_io(
+    /// Loads a `FileIO` instance based on the provided metadata location and additional configuration.
+    ///
+    /// # Arguments
+    ///
+    /// * `metadata_location` - An optional string slice representing the metadata location.
+    /// * `extra_config` - An optional `HashMap` containing additional configuration properties.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the constructed `FileIO` instance or an error if the operation fails.
+    pub async fn load_file_io(
         &self,
         metadata_location: Option<&str>,
         extra_config: Option<HashMap<String, String>>,

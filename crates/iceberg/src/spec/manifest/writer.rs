@@ -196,7 +196,7 @@ impl ManifestWriter {
     /// - Set the snapshot id to the current snapshot id
     /// - Set the sequence number to `None` if it is invalid(smaller than 0)
     /// - Set the file sequence number to `None`
-    pub(crate) fn add_entry(&mut self, mut entry: ManifestEntry) -> Result<()> {
+    pub fn add_entry(&mut self, mut entry: ManifestEntry) -> Result<()> {
         self.check_data_file(&entry.data_file)?;
         if entry.sequence_number().is_some_and(|n| n >= 0) {
             entry.status = ManifestStatus::Added;

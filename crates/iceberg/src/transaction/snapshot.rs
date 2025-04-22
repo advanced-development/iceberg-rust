@@ -48,7 +48,7 @@ pub(crate) trait SnapshotProduceOperation: Send + Sync {
     ) -> impl Future<Output = Result<Vec<ManifestFile>>> + Send;
 }
 
-pub(crate) struct DefaultManifestProcess;
+pub struct DefaultManifestProcess;
 
 impl ManifestProcess for DefaultManifestProcess {
     fn process_manifeset(&self, manifests: Vec<ManifestFile>) -> Vec<ManifestFile> {
@@ -235,7 +235,7 @@ impl<'a> SnapshotProduceAction<'a> {
     }
 
     // Returns a `Summary` of the current snapshot
-    fn summary<OP: SnapshotProduceOperation>(
+    pub fn summary<OP: SnapshotProduceOperation>(
         &self,
         snapshot_produce_operation: &OP,
     ) -> Result<Summary> {

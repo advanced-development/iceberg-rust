@@ -330,7 +330,19 @@ where T: PartialOrd + Default + ToString {
 }
 
 #[allow(dead_code)]
-pub(crate) fn update_snapshot_summaries(
+/// Updates snapshot summaries by merging the current summary with the previous one.
+///
+/// This function validates the operation type, optionally truncates the table summary,
+/// and updates various metrics such as total data files, delete files, records, and file size.
+///
+/// # Arguments
+/// * `summary` - The current snapshot summary.
+/// * `previous_summary` - An optional reference to the previous snapshot summary.
+/// * `truncate_full_table` - A boolean indicating whether to truncate the full table.
+///
+/// # Returns
+/// A `Result` containing the updated `Summary` or an error if the operation is unsupported.
+pub fn update_snapshot_summaries(
     summary: Summary,
     previous_summary: Option<&Summary>,
     truncate_full_table: bool,
