@@ -65,6 +65,16 @@ pub const S3_ALLOW_ANONYMOUS: &str = "s3.allow-anonymous";
 pub const S3_DISABLE_EC2_METADATA: &str = "s3.disable-ec2-metadata";
 /// Option to skip loading configuration from config file and the env.
 pub const S3_DISABLE_CONFIG_LOAD: &str = "s3.disable-config-load";
+/// Option to enable remote signing.
+pub const S3_REMOTE_SIGNING_ENABLED: &str = "s3.remote-signing-enabled";
+/// Option to set the signer to use for remote signing.
+pub const S3_SIGNER: &str = "s3.signer";
+/// Option to set the signer URI to use for remote signing.
+pub const S3_SIGNER_URI: &str = "s3.signer.uri";
+/// Option to set the signer endpoint to use for remote signing.
+pub const S3_SIGNER_ENDPOINT: &str = "s3.signer.endpoint";
+/// Option to set the signer token to use for remote signing.
+pub const TOKEN: &str = "token";
 
 /// Parse iceberg props to s3 config.
 pub(crate) fn s3_config_parse(mut m: HashMap<String, String>) -> Result<S3Config> {
@@ -146,6 +156,24 @@ pub(crate) fn s3_config_parse(mut m: HashMap<String, String>) -> Result<S3Config
             cfg.disable_config_load = true;
         }
     };
+
+    if let Some(remote_signing_enabled) = m.remove(S3_REMOTE_SIGNING_ENABLED) {
+        if is_truthy(remote_signing_enabled.to_lowercase().as_str()) {
+            cfg.remote_signing_enabled = true;
+        }
+    }
+    if let Some(signer) = m.remove(S3_SIGNER) {
+        cfg.signer = Some(signer);
+    }
+    if let Some(signer_uri) = m.remove(S3_SIGNER_URI) {
+        cfg.signer_uri = Some(signer_uri);
+    }
+    if let Some(signer_endpoint) = m.remove(S3_SIGNER_ENDPOINT) {
+        cfg.signer_endpoint = Some(signer_endpoint);
+    }
+    if let Some(token) = m.remove(TOKEN) {
+        cfg.token = Some(token);
+    }
 
     Ok(cfg)
 }
