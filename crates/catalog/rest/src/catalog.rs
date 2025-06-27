@@ -307,7 +307,16 @@ impl RestCatalog {
         };
 
         let file_io = match warehouse_path.or(metadata_location) {
-            Some(url) => FileIO::from_path(url)?.with_props(props).build()?,
+            Some(url) => {
+                let file_io_builder = FileIO::from_path(url)?.with_props(props);
+
+                if let Some(ref http_client) = self.context().await?.config.client() {
+                    file_io_builder.with_http_client(http_client.clone())
+                } else {
+                    file_io_builder
+                }
+                .build()?
+            }
             None => {
                 return Err(Error::new(
                     ErrorKind::Unexpected,

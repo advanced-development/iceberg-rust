@@ -3702,7 +3702,7 @@ dependencies = [
  "iceberg-catalog-rest",
  "iceberg-datafusion",
  "iceberg_test_utils",
- "ordered-float 4.6.0",
+ "ordered-float 2.10.1",
  "parquet",
  "tokio",
  "uuid",
@@ -4200,7 +4200,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -4767,7 +4767,7 @@ checksum = "d75b0bedcc4fe52caa0e03d9f1151a323e4aa5e2d78ba3580400cd3c9e2bc4bc"
 [[package]]
 name = "opendal"
 version = "0.53.3"
-source = "git+https://github.com/advanced-development/opendal.git?branch=remote-signer#918fc44d0225e6a4a4ab52944a1dd50f2a6dd11e"
+source = "git+https://github.com/advanced-development/opendal.git?branch=http_client#9304b3723a161984db97aac7792201c6480a91a8"
 dependencies = [
  "anyhow",
  "async-trait",
