@@ -51,7 +51,17 @@ pub fn convert_filters_to_predicate(filters: &[Expr]) -> Option<Predicate> {
 fn convert_filter_to_predicate(expr: &Expr) -> Option<Predicate> {
     match to_iceberg_predicate(expr) {
         TransformedResult::Predicate(predicate) => Some(predicate),
-        TransformedResult::Column(_) | TransformedResult::Literal(_) => {
+        TransformedResult::Column(r) => {
+            match to_iceberg_binary_predicate(
+                TransformedResult::Column(r),
+                TransformedResult::Literal(Datum::bool(true)),
+                PredicateOperator::Eq,
+            ) {
+                TransformedResult::Predicate(p) => Some(p),
+                _ => unreachable!("Not a valid expression: {:?}", expr),
+            }
+        }
+        TransformedResult::Literal(_) => {
             unreachable!("Not a valid expression: {:?}", expr)
         }
         _ => None,
@@ -75,6 +85,11 @@ fn to_iceberg_predicate(expr: &Expr) -> TransformedResult {
             let expr = to_iceberg_predicate(exp);
             match expr {
                 TransformedResult::Predicate(p) => TransformedResult::Predicate(!p),
+                TransformedResult::Column(r) => to_iceberg_binary_predicate(
+                    TransformedResult::Column(r),
+                    TransformedResult::Literal(Datum::bool(false)),
+                    PredicateOperator::Eq,
+                ),
                 _ => TransformedResult::NotTransformed,
             }
         }
@@ -214,6 +229,7 @@ fn scalar_value_to_datum(value: &ScalarValue) -> Option<Datum> {
         ScalarValue::LargeUtf8(Some(v)) => Some(Datum::string(v.clone())),
         ScalarValue::Date32(Some(v)) => Some(Datum::date(*v)),
         ScalarValue::Date64(Some(v)) => Some(Datum::date((*v / MILLIS_PER_DAY) as i32)),
+        ScalarValue::Boolean(Some(v)) => Some(Datum::bool(*v)),
         _ => None,
     }
 }
@@ -223,7 +239,7 @@ mod tests {
     use std::collections::HashMap;
 
     use datafusion::arrow::datatypes::{DataType, Field, Schema, TimeUnit};
-    use datafusion::common::DFSchema;
+    use datafusion::common::{Column, DFSchema};
     use datafusion::logical_expr::utils::split_conjunction;
     use datafusion::prelude::{Expr, SessionContext};
     use iceberg::expr::{Predicate, Reference};
@@ -349,6 +365,41 @@ mod tests {
         let sql = "foo > 1 and length(bar) = 1";
         let predicate = convert_to_iceberg_predicate(sql).unwrap();
         let expected_predicate = Reference::new("foo").greater_than(Datum::long(1));
+        assert_eq!(predicate, expected_predicate);
+    }
+
+    #[test]
+    fn test_predicate_conversion_boolean_column_true() {
+        let sql = "foo = true";
+        let predicate = convert_to_iceberg_predicate(sql).unwrap();
+        let expected_predicate = Reference::new("foo").equal_to(Datum::bool(true));
+        assert_eq!(predicate, expected_predicate);
+    }
+
+    #[test]
+    fn test_predicate_conversion_boolean_column_false() {
+        let sql = "foo = false";
+        let predicate = convert_to_iceberg_predicate(sql).unwrap();
+        let expected_predicate = Reference::new("foo").equal_to(Datum::bool(false));
+        assert_eq!(predicate, expected_predicate);
+    }
+
+    #[test]
+    fn test_predicate_conversion_column_as_boolean() {
+        let predicate =
+            convert_filters_to_predicate(&vec![Expr::Column(Column::new_unqualified("foo"))])
+                .unwrap();
+        let expected_predicate = Reference::new("foo").equal_to(Datum::bool(true));
+        assert_eq!(predicate, expected_predicate);
+    }
+
+    #[test]
+    fn test_predicate_conversion_column_as_boolean_inside_not() {
+        let predicate = convert_filters_to_predicate(&vec![Expr::Not(Box::new(Expr::Column(
+            Column::new_unqualified("foo"),
+        )))])
+        .unwrap();
+        let expected_predicate = Reference::new("foo").equal_to(Datum::bool(false));
         assert_eq!(predicate, expected_predicate);
     }
 
