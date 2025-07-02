@@ -4767,7 +4767,7 @@ checksum = "d75b0bedcc4fe52caa0e03d9f1151a323e4aa5e2d78ba3580400cd3c9e2bc4bc"
 [[package]]
 name = "opendal"
 version = "0.53.3"
-source = "git+https://github.com/advanced-development/opendal.git?branch=http_client#9304b3723a161984db97aac7792201c6480a91a8"
+source = "git+https://github.com/advanced-development/opendal.git?branch=remote-signer-fix#30e80da12964ae1a321fcc62d86a26ab3a73cd5f"
 dependencies = [
  "anyhow",
  "async-trait",
